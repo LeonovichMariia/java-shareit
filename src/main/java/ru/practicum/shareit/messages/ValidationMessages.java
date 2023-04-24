@@ -7,4 +7,5 @@ public interface ValidationMessages {
     String REQUEST_CREATED_DATA = "Дата создания запроса должна быть в прошлом или настоящем";
     String INCORRECT_EMAIL = "Некорректный email";
     String EMPTY_EMAIL = "email не может быть пустым";
+    String AVAILABLE_NULL = "Статус доступности вещи отсутствует";
 }

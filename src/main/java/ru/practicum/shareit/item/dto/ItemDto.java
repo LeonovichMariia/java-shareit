@@ -19,7 +19,7 @@ public class ItemDto {
     private String name;
     @NotBlank(message = ValidationMessages.EMPTY_DESCRIPTION)
     private String description;
-    @NotNull
+    @NotNull(message = ValidationMessages.AVAILABLE_NULL)
     private Boolean available;
     private Long owner;
     private ItemRequest request;
