@@ -10,9 +10,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,12 +19,12 @@ import java.util.stream.Collectors;
 public class UserStorageImpl implements UserStorage {
     private Long id = 1L;
     private final Map<Long, User> users = new HashMap<>();
+    private final Set<String> emails = new HashSet<>();
 
     protected void checkDuplication(UserDto userDto) {
-        for (User user : users.values()) {
-            if (userDto.getEmail().equals(user.getEmail())) {
-                throw new AlreadyExistException(LogMessages.ALREADY_EXIST.toString());
-            }
+        if (emails.contains(userDto.getEmail())) {
+            log.warn(LogMessages.ALREADY_EXIST.toString(), userDto);
+            throw new AlreadyExistException(LogMessages.ALREADY_EXIST.toString());
         }
     }
 
@@ -43,6 +41,7 @@ public class UserStorageImpl implements UserStorage {
         User user = UserMapper.toUser(userDto);
         user.setId(generateId());
         users.put(user.getId(), user);
+        emails.add(userDto.getEmail());
         return UserMapper.toUserDto(user);
     }
 
@@ -57,17 +56,19 @@ public class UserStorageImpl implements UserStorage {
         String updatedEmail = userDto.getEmail();
         if (updatedEmail != null && !updatedEmail.equals(user.getEmail())) {
             checkDuplication(userDto);
+            emails.remove(user.getEmail());
             user.setEmail(updatedEmail);
+            emails.add(userDto.getEmail());
         }
         users.put(userId, user);
         return UserMapper.toUserDto(user);
     }
 
     @Override
-    public User getUserById(Long userId) {
+    public UserDto getUserById(Long userId) {
         checkIfExist(userId);
         User user = users.get(userId);
-        return user;
+        return UserMapper.toUserDto(user);
     }
 
     @Override
@@ -80,6 +81,8 @@ public class UserStorageImpl implements UserStorage {
     @Override
     public void removeUserById(Long userId) {
         checkIfExist(userId);
+        User user = UserMapper.toUser(getUserById(userId));
+        emails.remove(user.getEmail());
         users.remove(userId);
     }
 

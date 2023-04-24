@@ -16,7 +16,6 @@ public class BookingDto {
     private LocalDateTime start;
     @FutureOrPresent(message = ValidationMessages.END_DATA)
     private LocalDateTime end;
-    private String description;
     private Item item;
     private User booker;
     private BookingStatus status;

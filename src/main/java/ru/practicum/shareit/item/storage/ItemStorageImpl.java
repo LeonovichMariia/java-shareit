@@ -8,6 +8,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.messages.LogMessages;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.*;
@@ -24,10 +26,12 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
-        Item item = ItemMapper.toItem(itemDto, userId);
+        Item item = ItemMapper.toItem(itemDto);
+        User user = UserMapper.toUser(userStorage.getUserById(userId));
         item.setId(generateId());
+        item.setOwner(user);
         items.put(item.getId(), item);
-        addToPersonalItems(item.getOwner(), item.getId());
+        addToPersonalItems(userId, item.getId());
         return ItemMapper.toItemDto(item);
     }
 
@@ -48,7 +52,8 @@ public class ItemStorageImpl implements ItemStorage {
             item.setAvailable(updatedAvailable);
         }
         items.put(itemId, item);
-        addToPersonalItems(item.getOwner(), item.getId());
+        User user = UserMapper.toUser(userStorage.getUserById(userId));
+        addToPersonalItems(user.getId(), item.getId());
         return ItemMapper.toItemDto(item);
     }
 
@@ -61,8 +66,9 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public List<ItemDto> getPersonal(Long userId) {
-        return items.values().stream()
-                .filter(x -> Objects.equals(x.getOwner(), userId))
+        Set<Long> personalItems = userPersonalItems.get(userId);
+        return personalItems.stream()
+                .map(items::get)
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

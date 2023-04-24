@@ -10,7 +10,7 @@ public interface UserStorage {
 
     UserDto renewalUser(UserDto userDto, Long userId);
 
-    User getUserById(Long userId);
+    UserDto getUserById(Long userId);
 
     List<UserDto> getAllUsers();
 

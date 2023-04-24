@@ -9,6 +9,8 @@ import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.messages.LogMessages;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
@@ -30,7 +32,7 @@ public class ItemServiceImpl implements ItemService {
             log.warn(LogMessages.EMPTY_DESCRIPTION.toString(), itemDto);
             throw new ValidationException(LogMessages.EMPTY_DESCRIPTION.toString());
         }
-        if (itemDto.getName() == null || itemDto.getName().equals("") || itemDto.getName().isEmpty()) {
+        if (itemDto.getName() == null || itemDto.getName().isEmpty()) {
             log.warn(LogMessages.EMPTY_NAME.toString(), itemDto);
             throw new ValidationException(LogMessages.EMPTY_NAME.toString());
         }
@@ -51,7 +53,8 @@ public class ItemServiceImpl implements ItemService {
             log.warn(LogMessages.NOT_FOUND.toString());
             throw new NotFoundException(LogMessages.NOT_FOUND.toString());
         }
-        if (!Objects.equals(item.getOwner(), userId)) {
+        User user = UserMapper.toUser(userStorage.getUserById(userId));
+        if (!Objects.equals(item.getOwner(), user)) {
             log.warn(LogMessages.ILLEGAL_ACCESS.toString());
             throw new IllegalAccessException(LogMessages.ILLEGAL_ACCESS.toString());
         }
