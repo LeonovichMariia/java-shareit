@@ -1,7 +1,6 @@
 package ru.practicum.shareit.request.dto;
 
 import ru.practicum.shareit.messages.ValidationMessages;
-import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
