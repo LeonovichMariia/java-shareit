@@ -3,16 +3,11 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.messages.LogMessages;
-import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,26 +23,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDto renewalUser(UserDto userDto, Long userId) {
-        User selectedUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
-                LogMessages.NOT_FOUND.toString() + userId));
+        User user = userRepository.validateUser(userId);
         String updatedName = userDto.getName();
         if (updatedName != null) {
-            selectedUser.setName(updatedName);
+            user.setName(updatedName);
         }
         String updatedEmail = userDto.getEmail();
         if (updatedEmail != null) {
-            selectedUser.setEmail(updatedEmail);
+            user.setEmail(updatedEmail);
         }
-        User updatedUser = userRepository.save(selectedUser);
+        User updatedUser = userRepository.save(user);
         return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
-                LogMessages.NOT_FOUND.toString() + userId));
+        User user = userRepository.validateUser(userId);
         return UserMapper.toUserDto(user);
     }
 
@@ -60,8 +52,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void removeUserById(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
-                LogMessages.NOT_FOUND.toString() + userId));
+        userRepository.validateUser(userId);
         userRepository.deleteById(userId);
     }
 }

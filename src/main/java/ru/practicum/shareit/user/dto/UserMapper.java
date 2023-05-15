@@ -22,4 +22,11 @@ public class UserMapper {
                 .email(userDto.getEmail())
                 .build();
     }
+
+//    public static UserDtoShort toUserDtoShort(User user) {
+//        return UserDtoShort.builder()
+//                .id(user.getId())
+//                .name(user.getName())
+//                .build();
+//    }
 }
