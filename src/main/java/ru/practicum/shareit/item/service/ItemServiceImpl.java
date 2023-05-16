@@ -3,12 +3,16 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.IllegalAccessException;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.RequestException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -24,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -86,14 +91,28 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getPersonal(Long userId) {
         userRepository.validateUser(userId);
-        return itemRepository.findAllByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .peek(itemDto -> {
-                    Long itemId = itemDto.getId();
-                    List<Comment> comments = commentRepository.findAllByItemId(itemId);
-                    setComments(itemDto, comments);
-                    setBookings(itemDto);
-                })
+        List<Item> items = itemRepository.findAllByOwnerId(userId);
+        if (items.isEmpty()) {
+            log.warn(LogMessages.NOT_FOUND.toString());
+            throw new NotFoundException(LogMessages.NOT_FOUND.toString());
+        }
+        Map<Long, List<BookingDto>> bookings =
+                bookingRepository.findAllByOwnerAndStatus(userId, BookingStatus.APPROVED, SORT_BY_START_ASC)
+                        .stream()
+                        .map(BookingMapper::toBookingDto)
+                        .collect(Collectors.groupingBy(BookingDto::getItemId));
+
+        Map<Long, List<CommentDto>> comments = commentRepository.findAllByItemIn(items)
+                .stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(Collectors.groupingBy(CommentDto::getItemId));
+
+        return items.stream()
+                .map(item -> ItemMapper.toItemDto(
+                        item,
+                        getLastBookingForPersonal(bookings.get(item.getId())),
+                        getNextBookingForPersonal(bookings.get(item.getId())),
+                        comments.getOrDefault(item.getId(), Collections.emptyList())))
                 .collect(Collectors.toList());
     }
 
@@ -141,5 +160,27 @@ public class ItemServiceImpl implements ItemService {
         Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterAndStatus(
                 itemId, LocalDateTime.now(), BookingStatus.APPROVED, SORT_BY_START_ASC).orElse(null);
         itemDto.setNextBooking(BookingMapper.toBookingShortDto(nextBooking));
+    }
+
+    private BookingShortDto getNextBookingForPersonal(List<BookingDto> booking) {
+        if (booking == null || booking.isEmpty()) {
+            return null;
+        }
+        return booking.stream()
+                .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
+                .findFirst()
+                .map(BookingMapper::toBookingShortDto)
+                .orElse(null);
+    }
+
+    private BookingShortDto getLastBookingForPersonal(List<BookingDto> booking) {
+        if (booking == null || booking.isEmpty()) {
+            return null;
+        }
+        return booking.stream()
+                .filter(b -> b.getStart().isBefore(LocalDateTime.now()))
+                .reduce((booking1, booking2) -> booking2)
+                .map(BookingMapper::toBookingShortDto)
+                .orElse(null);
     }
 }

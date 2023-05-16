@@ -22,6 +22,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBookerId(Long bookerId, Sort sort);
 
     @Query("SELECT b FROM Booking AS b " +
+            "WHERE b.item.owner.id = :ownerId " +
+            "AND b.status = :status")
+    List<Booking> findAllByOwnerAndStatus(Long ownerId, BookingStatus status, Sort order);
+
+    @Query("SELECT b FROM Booking AS b " +
             "JOIN FETCH b.item AS i " +
             "JOIN FETCH i.owner " +
             "JOIN FETCH b.booker " +

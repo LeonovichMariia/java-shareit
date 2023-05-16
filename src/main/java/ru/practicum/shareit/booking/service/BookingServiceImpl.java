@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
             log.warn(LogMessages.BOOKING_APPROVED.toString());
             throw new BookingException(LogMessages.BOOKING_APPROVED.toString());
         }
-        if (approved) {
+        if (approved && booking.getStatus().equals(BookingStatus.WAITING)) {
             booking.setStatus(BookingStatus.APPROVED);
         } else {
             booking.setStatus(BookingStatus.REJECTED);
@@ -80,7 +80,9 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto getBookingById(Long bookingId, Long userId) {
         Booking booking = bookingRepository.validateBooking(bookingId);
         User user = userRepository.validateUser(userId);
-        if (!(booking.getBooker().getId().equals(user.getId()) || booking.getItem().getOwner().getId().equals(user.getId()))) {
+        Long bookerId = booking.getBooker().getId();
+        Long itemOwnerId = booking.getItem().getOwner().getId();
+        if (!(bookerId.equals(user.getId()) || itemOwnerId.equals(user.getId()))) {
             log.warn(LogMessages.BOOKING_GET_BY_ID.toString(), userId);
             throw new NotFoundException(LogMessages.BOOKING_GET_BY_ID.toString());
         }

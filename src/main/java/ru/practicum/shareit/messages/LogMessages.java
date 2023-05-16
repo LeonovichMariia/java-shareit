@@ -10,6 +10,7 @@ public enum LogMessages {
     REMOVE_REQUEST("Запрос на удаление пользователя {} "),
     BAD_REQUEST_STATUS("Ошибка 400!"),
     NOT_FOUND_STATUS("Ошибка 404!"),
+    INTERNAL_SERVER_ERROR_STATUS("Ошибка 500! {}"),
     ALREADY_EXIST_ERROR_STATUS("Ошибка 409!"),
     ILLEGAL_ACCESS_ERROR_STATUS("Ошибка 403!"),
     ALREADY_EXIST("Такой объект {} уже есть"),
