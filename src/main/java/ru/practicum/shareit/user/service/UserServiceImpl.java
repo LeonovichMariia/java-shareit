@@ -3,53 +3,56 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.messages.LogMessages;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserStorage userStorage;
-
-    private void validate(UserDto userDto) {
-        if (userDto.getName() == null || userDto.getName().isBlank()) {
-            log.warn(LogMessages.EMPTY_USER_NAME.toString());
-            throw new ValidationException(LogMessages.EMPTY_NAME.toString());
-        }
-        if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
-            log.warn(LogMessages.EMPTY_EMAIL.toString());
-            throw new ValidationException(LogMessages.EMPTY_EMAIL.toString());
-        }
-    }
+    private final UserRepository userRepository;
 
     @Override
     public UserDto addUser(UserDto userDto) {
-        validate(userDto);
-        return userStorage.addUser(userDto);
+        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
     @Override
     public UserDto renewalUser(UserDto userDto, Long userId) {
-        return userStorage.renewalUser(userDto, userId);
+        User user = userRepository.validateUser(userId);
+        String updatedName = userDto.getName();
+        if (updatedName != null) {
+            user.setName(updatedName);
+        }
+        String updatedEmail = userDto.getEmail();
+        if (updatedEmail != null) {
+            user.setEmail(updatedEmail);
+        }
+        User updatedUser = userRepository.save(user);
+        return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        return userStorage.getUserById(userId);
+        User user = userRepository.validateUser(userId);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userStorage.getAllUsers();
+        return userRepository.findAll().stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void removeUserById(Long userId) {
-        userStorage.removeUserById(userId);
+        userRepository.validateUser(userId);
+        userRepository.deleteById(userId);
     }
 }
