@@ -8,8 +8,6 @@ import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.messages.LogMessages;
 
-import java.util.List;
-
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     default Item validateItem(Long itemId) {

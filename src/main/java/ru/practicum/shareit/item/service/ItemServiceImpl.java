@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingStatus;
@@ -49,7 +48,6 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRequestRepository itemRequestRepository;
     public static final Sort SORT_BY_START_ASC = Sort.by("start").ascending();
     public static final Sort SORT_BY_START_DESC = Sort.by("start").descending();
-    public static final Sort SORT_BY_ID = Sort.by("id").ascending();
 
     @Override
     public ItemDto addItem(Long userId, AddItemRequest itemDto) {
@@ -57,7 +55,7 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.validateUser(userId);
         item.setOwner(user);
         Long requestId = itemDto.getRequestId();
-        if(requestId != null) {
+        if (requestId != null) {
             ItemRequest itemRequest = itemRequestRepository.validateItemRequest(itemDto.getRequestId());
             item.setRequest(itemRequest);
         }

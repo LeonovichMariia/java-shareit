@@ -2,7 +2,6 @@ package ru.practicum.shareit.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.messages.LogMessages;
@@ -13,7 +12,6 @@ import ru.practicum.shareit.request.service.ItemRequestService;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 /**
