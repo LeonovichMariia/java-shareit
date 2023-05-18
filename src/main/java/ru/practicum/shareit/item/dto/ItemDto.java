@@ -25,7 +25,7 @@ public class ItemDto {
     @NotNull(message = ValidationMessages.AVAILABLE_NULL)
     private Boolean available;
     private User owner;
-    private ItemRequest request;
+    private Long requestId;
     private List<CommentDto> comments;
     private BookingShortDto lastBooking;
     private BookingShortDto nextBooking;

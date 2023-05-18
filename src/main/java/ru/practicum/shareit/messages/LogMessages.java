@@ -8,6 +8,7 @@ public enum LogMessages {
     GET_ALL_USERS("Запрос списка всех пользователей"),
     SEARCH_REQUEST("Запрос на поиск вещи"),
     REMOVE_REQUEST("Запрос на удаление пользователя {} "),
+    ADD_ITEMREQUEST_REQUEST("Запрос на добавление нового запроса вещи"),
     BAD_REQUEST_STATUS("Ошибка 400!"),
     NOT_FOUND_STATUS("Ошибка 404!"),
     INTERNAL_SERVER_ERROR_STATUS("Ошибка 500! {}"),

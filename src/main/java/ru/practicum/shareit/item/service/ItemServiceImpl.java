@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingStatus;
@@ -22,6 +24,9 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.messages.LogMessages;
+import ru.practicum.shareit.request.dto.AddItemRequest;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -41,15 +46,22 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
     public static final Sort SORT_BY_START_ASC = Sort.by("start").ascending();
     public static final Sort SORT_BY_START_DESC = Sort.by("start").descending();
+    public static final Sort SORT_BY_ID = Sort.by("id").ascending();
 
     @Override
-    public ItemDto addItem(Long userId, ItemDto itemDto) {
-        Item newItem = ItemMapper.toItem(itemDto);
+    public ItemDto addItem(Long userId, AddItemRequest itemDto) {
+        Item item = ItemMapper.toItem(itemDto);
         User user = userRepository.validateUser(userId);
-        newItem.setOwner(user);
-        return ItemMapper.toItemDto(itemRepository.save(newItem));
+        item.setOwner(user);
+        Long requestId = itemDto.getRequestId();
+        if(requestId != null) {
+            ItemRequest itemRequest = itemRequestRepository.validateItemRequest(itemDto.getRequestId());
+            item.setRequest(itemRequest);
+        }
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
@@ -91,9 +103,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getPersonal(Long userId) {
+    public List<ItemDto> getPersonal(Long userId, Integer from, Integer size) {
         userRepository.validateUser(userId);
-        List<Item> items = itemRepository.findAllByOwnerId(userId);
+        PageRequest pageRequest = PageRequest.of(from > 0 ? from / size : 0, size);
+        List<Item> items = itemRepository.findAllByOwnerId(userId, pageRequest).getContent();
         if (items.isEmpty()) {
             log.warn(LogMessages.NOT_FOUND.toString());
             throw new NotFoundException(LogMessages.NOT_FOUND.toString());
@@ -119,13 +132,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
         if (text.isBlank()) {
             log.warn(LogMessages.BLANK_TEXT.toString());
             return Collections.emptyList();
         }
         String lowerText = text.toLowerCase();
-        Collection<Item> items = itemRepository.searchItemByText(lowerText);
+        PageRequest pageRequest = PageRequest.of(from > 0 ? from / size : 0, size);
+        Collection<Item> items = itemRepository.searchItemByText(lowerText,
+                pageRequest).getContent();
         return items.stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());

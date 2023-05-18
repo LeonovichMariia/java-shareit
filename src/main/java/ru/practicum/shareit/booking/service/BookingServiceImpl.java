@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingState;
@@ -90,28 +92,29 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllUserBookings(Long bookerId, BookingState state) {
+    public List<BookingDto> getAllUserBookings(Long bookerId, BookingState state, Integer from, Integer size) {
         userRepository.validateUser(bookerId);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookingDtoList;
+        PageRequest pageable = PageRequest.of(from > 0 ? from / size : 0, size, SORT);
         switch (state) {
             case ALL:
-                bookingDtoList = bookingRepository.findAllByBookerId(bookerId, SORT);
+                bookingDtoList = bookingRepository.findAllByBookerId(bookerId, pageable).getContent();
                 break;
             case CURRENT:
-                bookingDtoList = bookingRepository.findByBookerIdAndNowBetweenStartAndEnd(bookerId, now, SORT);
+                bookingDtoList = bookingRepository.findByBookerIdAndNowBetweenStartAndEnd(bookerId, now, pageable).getContent();
                 break;
             case FUTURE:
-                bookingDtoList = bookingRepository.findByBookerIdAndStartIsAfter(bookerId, now, SORT);
+                bookingDtoList = bookingRepository.findByBookerIdAndStartIsAfter(bookerId, now, pageable).getContent();
                 break;
             case PAST:
-                bookingDtoList = bookingRepository.findByBookerIdAndEndIsBefore(bookerId, now, SORT);
+                bookingDtoList = bookingRepository.findByBookerIdAndEndIsBefore(bookerId, now, pageable).getContent();
                 break;
             case WAITING:
-                bookingDtoList = bookingRepository.findByBookerIdAndStatusIs(bookerId, BookingStatus.WAITING, SORT);
+                bookingDtoList = bookingRepository.findByBookerIdAndStatusIs(bookerId, BookingStatus.WAITING, pageable).getContent();
                 break;
             case REJECTED:
-                bookingDtoList = bookingRepository.findByBookerIdAndStatusIs(bookerId, BookingStatus.REJECTED, SORT);
+                bookingDtoList = bookingRepository.findByBookerIdAndStatusIs(bookerId, BookingStatus.REJECTED, pageable).getContent();
                 break;
             default:
                 log.warn(LogMessages.UNSUPPORTED_STATUS.toString(), state);
@@ -123,28 +126,31 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getOwnerAllItemBookings(Long userId, BookingState state) {
+    public List<BookingDto> getOwnerAllItemBookings(Long userId, BookingState state, Integer from, Integer size) {
         userRepository.validateUser(userId);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookingDtoList;
+        PageRequest pageable = PageRequest.of(from > 0 ? from / size : 0, size, SORT);
         switch (state) {
             case ALL:
-                bookingDtoList = bookingRepository.findAllByItemOwnerId(userId, SORT);
+                bookingDtoList = bookingRepository.findAllByItemOwnerId(userId, pageable).getContent();
                 break;
             case CURRENT:
-                bookingDtoList = bookingRepository.findAllCurrentOwnerBookings(userId, now, SORT);
+                bookingDtoList = bookingRepository.findAllCurrentOwnerBookings(userId, now, pageable).getContent();
                 break;
             case FUTURE:
-                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndStartIsAfter(userId, now, SORT);
+                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndStartIsAfter(userId, now, pageable).getContent();
                 break;
             case PAST:
-                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndEndIsBefore(userId, now, SORT);
+                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndEndIsBefore(userId, now, pageable).getContent();
                 break;
             case WAITING:
-                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndStatusIs(userId, BookingStatus.WAITING, SORT);
+                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndStatusIs(userId,
+                        BookingStatus.WAITING, pageable).getContent();
                 break;
             case REJECTED:
-                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndStatusIs(userId, BookingStatus.REJECTED, SORT);
+                bookingDtoList = bookingRepository.findAllByItemOwnerIdAndStatusIs(userId,
+                        BookingStatus.REJECTED, pageable).getContent();
                 break;
             default:
                 log.warn(LogMessages.UNSUPPORTED_STATUS.toString(), state);
