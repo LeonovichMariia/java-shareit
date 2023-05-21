@@ -21,9 +21,9 @@ import java.util.List;
 @AllArgsConstructor
 public class AddItemRequest {
     private Long id;
+    private Long requestor;
     @NotBlank(message = ValidationMessages.EMPTY_DESCRIPTION)
     private String description;
-    private Long requestor;
     private LocalDateTime created;
     private List<ItemDto> items;
 }

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.request.dto.AddItemRequest;
-import ru.practicum.shareit.request.dto.ItemRequestCreationRequest;
 import ru.practicum.shareit.request.dto.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
@@ -24,7 +23,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public AddItemRequest addRequest(ItemRequestCreationRequest addItemRequest, Long requestorId) {
+    public AddItemRequest addRequest(AddItemRequest addItemRequest, Long requestorId) {
         User user = userRepository.validateUser(requestorId);
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(addItemRequest, user);
         itemRequest.setRequestor(user);

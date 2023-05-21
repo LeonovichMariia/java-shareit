@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class ItemRequestMapper {
 
-    public static ItemRequest toItemRequest(ItemRequestCreationRequest addItemRequest, User user) {
+    public static ItemRequest toItemRequest(AddItemRequest addItemRequest, User user) {
         return ItemRequest.builder()
                 .id(addItemRequest.getId())
                 .requestor(user)
