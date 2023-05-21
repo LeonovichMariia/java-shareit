@@ -29,9 +29,9 @@ public class ItemController {
 
     @PostMapping
     public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @Valid @RequestBody AddItemRequest addItemRequest) {
-        log.info(LogMessages.ADD_REQUEST.toString(), addItemRequest);
-        return itemService.addItem(userId, addItemRequest);
+                           @Valid @RequestBody ItemDto itemDto) {
+        log.info(LogMessages.ADD_REQUEST.toString(), itemDto);
+        return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")

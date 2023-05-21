@@ -50,13 +50,13 @@ public class ItemServiceImpl implements ItemService {
     public static final Sort SORT_BY_START_DESC = Sort.by("start").descending();
 
     @Override
-    public ItemDto addItem(Long userId, AddItemRequest itemDto) {
+    public ItemDto addItem(Long userId, ItemDto itemDto) {
         Item item = ItemMapper.toItem(itemDto);
         User user = userRepository.validateUser(userId);
         item.setOwner(user);
         Long requestId = itemDto.getRequestId();
         if (requestId != null) {
-            ItemRequest itemRequest = itemRequestRepository.validateItemRequest(itemDto.getRequestId());
+            ItemRequest itemRequest = itemRequestRepository.validateItemRequest(requestId);
             item.setRequest(itemRequest);
         }
         return ItemMapper.toItemDto(itemRepository.save(item));

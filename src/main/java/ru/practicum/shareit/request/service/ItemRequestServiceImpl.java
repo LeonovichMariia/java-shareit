@@ -26,17 +26,17 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public AddItemRequest addRequest(ItemRequestCreationRequest addItemRequest, Long requestorId) {
         User user = userRepository.validateUser(requestorId);
-        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(addItemRequest);
+        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(addItemRequest, user);
         itemRequest.setRequestor(user);
         itemRequest.setCreated(LocalDateTime.now());
-        return ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
+        return ItemRequestMapper.toAddItemRequest(itemRequestRepository.save(itemRequest));
     }
 
     @Override
     public List<AddItemRequest> getUserRequests(Long requestorId) {
         User user = userRepository.validateUser(requestorId);
         return itemRequestRepository.findAllByRequestorId(user.getId()).stream()
-                .map(ItemRequestMapper::toItemRequestDto)
+                .map(ItemRequestMapper::toAddItemRequest)
                 .collect(Collectors.toList());
     }
 
@@ -45,7 +45,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userRepository.validateUser(userId);
         PageRequest pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         return itemRequestRepository.findAllByRequestorIdNot(userId, pageable)
-                .map(ItemRequestMapper::toItemRequestDto)
+                .map(ItemRequestMapper::toAddItemRequest)
                 .getContent();
     }
 
@@ -53,6 +53,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public AddItemRequest getItemRequestById(Long userId, Long requestId) {
         userRepository.validateUser(userId);
         ItemRequest itemRequest = itemRequestRepository.validateItemRequest(requestId);
-        return ItemRequestMapper.toItemRequestDto(itemRequest);
+        return ItemRequestMapper.toAddItemRequest(itemRequest);
     }
 }

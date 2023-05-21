@@ -14,10 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequestCreationRequest {
-    private Long requestId;
-    private String name;
+    private Long id;
+    private Long requestor;
     @NotBlank(message = ValidationMessages.EMPTY_DESCRIPTION)
     private String description;
-    private Boolean available;
     private LocalDateTime created;
 }

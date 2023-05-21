@@ -20,14 +20,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddItemRequest {
-    private Long requestId;
     private Long id;
-    @NotBlank
-    private String name;
     @NotBlank(message = ValidationMessages.EMPTY_DESCRIPTION)
     private String description;
-    @NotNull(message = ValidationMessages.AVAILABLE_NULL)
-    private Boolean available;
+    private Long requestor;
     private LocalDateTime created;
     private List<ItemDto> items;
 }

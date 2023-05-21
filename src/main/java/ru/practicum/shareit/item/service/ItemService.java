@@ -7,7 +7,7 @@ import ru.practicum.shareit.request.dto.AddItemRequest;
 import java.util.List;
 
 public interface ItemService {
-    ItemDto addItem(Long userId, AddItemRequest itemDto);
+    ItemDto addItem(Long userId, ItemDto itemDto);
 
     ItemDto renewalItem(Long itemId, ItemDto itemDto, Long userId);
 
