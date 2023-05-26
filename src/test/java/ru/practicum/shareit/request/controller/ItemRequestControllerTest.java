@@ -9,12 +9,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.request.dto.AddItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
-import ru.practicum.shareit.user.model.User;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,12 +39,12 @@ class ItemRequestControllerTest {
     @MockBean
     private ItemRequestService itemRequestService;
     private AddItemRequest itemRequest;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @BeforeEach
     void setUp() {
         LocalDateTime created = LocalDateTime.now();
         itemRequest = AddItemRequest.builder()
-                .id(1L)
                 .created(created)
                 .requestor(1L)
                 .description("Item request description")
@@ -52,8 +54,9 @@ class ItemRequestControllerTest {
     @Test
     public void shouldCreateItemRequest() throws Exception {
         when(itemRequestService.addRequest(any(), anyLong())).thenReturn(itemRequest);
-        mockMvc.perform(post("/requests").content(objectMapper.writeValueAsString(itemRequest))
-                        .header("X-Sharer-User-Id", "1")
+        mockMvc.perform(post("/requests")
+                        .content(objectMapper.writeValueAsString(itemRequest))
+                        .header("X-Sharer-User-Id", 1)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -61,8 +64,20 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.id", is(itemRequest.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequest.getDescription())))
                 .andExpect(jsonPath("$.created",
-                        is((itemRequest.getCreated().toString()).replaceAll("0+$", ""))))
+                        is((itemRequest.getCreated().format(formatter)).replaceAll("0+$", ""))))
                 .andExpect(jsonPath("$.requestor", is(itemRequest.getRequestor()), Long.class));
+    }
+
+    @Test
+    public void shouldNotCreateItemRequestWithNotFoundUser() throws Exception {
+        when(itemRequestService.addRequest(any(), anyLong())).thenThrow(new NotFoundException("Объект не найден {}"));
+        mockMvc.perform(post("/requests")
+                        .header("X-Sharer-User-Id", 99)
+                        .content(objectMapper.writeValueAsString(itemRequest))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -75,8 +90,26 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.id", is(itemRequest.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequest.getDescription())))
                 .andExpect(jsonPath("$.created",
-                        is((itemRequest.getCreated().toString()).replaceAll("0+$", ""))))
+                        is((itemRequest.getCreated().format(formatter)).replaceAll("0+$", ""))))
                 .andExpect(jsonPath("$.requestor", is(itemRequest.getRequestor()), Long.class));
+    }
+
+    @Test
+    void shouldNotGetItemRequestByNotFoundId() throws Exception {
+        when(itemRequestService.getItemRequestById(anyLong(), anyLong())).thenThrow(new NotFoundException("Объект не найден {}"));
+
+        mockMvc.perform(get("/requests/{requestId}", 99L)
+                        .header("X-Sharer-User-Id", 1))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldNotGetItemRequestByIdWithNotFoundUser() throws Exception {
+        when(itemRequestService.getItemRequestById(anyLong(), anyLong())).thenThrow(new NotFoundException("Объект не найден {}"));
+
+        mockMvc.perform(get("/requests/{requestId}", 1L)
+                        .header("X-Sharer-User-Id", 99))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -110,5 +143,31 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$[0].id", is(itemRequest.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description", is(itemRequest.getDescription())))
                 .andExpect(jsonPath("$[0].requestor", is(itemRequest.getRequestor()), Long.class));
+    }
+
+    @Test
+    public void shouldNotCreateWithEmptyDescription() throws Exception {
+        itemRequest.setDescription("");
+        when(itemRequestService.addRequest(any(), anyLong())).thenThrow(new ValidationException("Описание не может быть пустым"));
+        mockMvc.perform(post("/requests")
+                        .content(objectMapper.writeValueAsString(itemRequest))
+                        .header("X-Sharer-User-Id", 1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void shouldNotCreateWithInvalidCreated() throws Exception {
+        itemRequest.setCreated(LocalDateTime.of(2020, 12,15, 13,0));
+        when(itemRequestService.addRequest(any(), anyLong())).thenThrow(new ValidationException("Дата создания запроса должна быть в прошлом или настоящем"));
+        mockMvc.perform(post("/requests")
+                        .content(objectMapper.writeValueAsString(itemRequest))
+                        .header("X-Sharer-User-Id", 1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

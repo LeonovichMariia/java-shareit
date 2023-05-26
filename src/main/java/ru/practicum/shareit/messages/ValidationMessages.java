@@ -9,4 +9,5 @@ public interface ValidationMessages {
     String INCORRECT_EMAIL = "Некорректный email";
     String EMPTY_EMAIL = "email не может быть пустым";
     String AVAILABLE_NULL = "Статус доступности вещи отсутствует";
+    String EMPTY_TEXT = "Отсутствует текст поискового запроса";
 }
