@@ -17,6 +17,8 @@ import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.IllegalAccessException;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.RequestException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -112,36 +114,57 @@ class ItemServiceImplTest {
 
     @Test
     public void addItemAndReturnSavedItemWithoutRequest() {
+        long userId = user.getId();
         ItemDto expectedItem = ItemMapper.toItemDto(item);
+        ItemDto expectedItemDto = ItemDto.builder()
+                .id(1L)
+                .name("Item name")
+                .description("Item description")
+                .available(true)
+                .owner(user)
+                .comments(Collections.emptyList())
+                .build();
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRepository.save(any())).thenReturn(item);
-
-        ItemDto actualItemDto = itemService.addItem(user.getId(), itemDto);
+        ItemDto actualItemDto = itemService.addItem(userId, expectedItemDto);
 
         assertEquals(expectedItem, actualItemDto);
         assertEquals(expectedItem.getName(), actualItemDto.getName());
         assertEquals(expectedItem.getDescription(), actualItemDto.getDescription());
         assertEquals(expectedItem.getRequestId(), actualItemDto.getRequestId());
         assertNull(actualItemDto.getRequestId());
+        verify(userRepository, times(1)).validateUser(userId);
         verify(itemRepository, times(1)).save(any());
-        verify(itemRequestRepository, never()).findById(1L);
+        verify(itemRequestRepository, never()).validateItemRequest(1L);
     }
 
     @Test
     public void addItemAndReturnSavedItemWithRequest() {
+        long requestId = itemRequest.getId();
+        long userId = user.getId();
         item.setRequest(itemRequest);
         ItemDto expectedItem = ItemMapper.toItemDto(item);
+
+        ItemDto expectedItemDto = ItemDto.builder()
+                .id(1L)
+                .name("Item name")
+                .description("Item description")
+                .available(true)
+                .requestId(requestId)
+                .owner(user)
+                .comments(Collections.emptyList())
+                .build();
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRepository.save(any())).thenReturn(item);
-
-        ItemDto actualItemDto = itemService.addItem(user.getId(), itemDto);
+        when(itemRequestRepository.validateItemRequest(anyLong())).thenReturn(itemRequest);
+        ItemDto actualItemDto = itemService.addItem(userId, expectedItemDto);
 
         assertEquals(expectedItem, actualItemDto);
         assertEquals(expectedItem.getName(), actualItemDto.getName());
         assertEquals(expectedItem.getDescription(), actualItemDto.getDescription());
         assertEquals(expectedItem.getRequestId(), actualItemDto.getRequestId());
+        verify(userRepository, times(1)).validateUser(userId);
         verify(itemRepository, times(1)).save(any());
-        verify(itemRequestRepository, never()).findById(1L);
     }
 
     @Test
@@ -150,6 +173,28 @@ class ItemServiceImplTest {
         itemDto.setName("New item name");
         Item itemNew = ItemMapper.toItem(itemDto);
         ItemDto expectedItem = ItemMapper.toItemDto(itemNew);
+        when(userRepository.validateUser(anyLong())).thenReturn(user);
+        when(itemRepository.validateItem(anyLong())).thenReturn(item);
+        when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto));
+
+        ItemDto actualItemDto = itemService.renewalItem(item.getId(), itemDto, user.getId());
+
+        assertEquals(expectedItem, actualItemDto);
+        assertEquals(expectedItem.getName(), actualItemDto.getName());
+        assertEquals(expectedItem.getDescription(), actualItemDto.getDescription());
+        assertEquals(expectedItem.getRequestId(), actualItemDto.getRequestId());
+        verify(itemRepository, times(1)).save(any());
+        verify(itemRequestRepository, never()).findById(1L);
+    }
+
+    @Test
+    public void renewalItemWithNull() {
+        itemDto.setDescription(null);
+        itemDto.setName(null);
+        itemDto.setAvailable(null);
+        Item itemNew = ItemMapper.toItem(itemDto);
+        ItemDto expectedItem = ItemMapper.toItemDto(itemNew);
+        when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRepository.validateItem(anyLong())).thenReturn(item);
         when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto));
 
@@ -249,6 +294,22 @@ class ItemServiceImplTest {
     }
 
     @Test
+    public void getPersonalWithNoItems() {
+        item.setOwner(user2);
+        itemDto.setOwner(user2);
+        int from = 0;
+        int size = 5;
+        Pageable page = PageRequest.of(from > 0 ? from / size : 0, size);
+        when(userRepository.validateUser(anyLong())).thenReturn(user);
+        when(itemRepository.findAllByOwnerId(anyLong(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
+        assertThrows(NotFoundException.class, () -> itemService.getPersonal(user.getId(), from, size));
+
+        verify(itemRepository, times(1)).findAllByOwnerId(user.getId(), page);
+        verify(commentRepository, never()).findAllByItemIn(List.of(item));
+        verify(bookingRepository, never()).findAllByOwnerAndStatus(anyLong(), any(BookingStatus.class), any(Sort.class));
+    }
+
+    @Test
     public void search() {
         int from = 0;
         int size = 5;
@@ -296,5 +357,20 @@ class ItemServiceImplTest {
         when(commentRepository.save(any())).thenReturn(expectedComment);
         CommentDto actualComment = itemService.addComment(expectedUserId, expectedItemId, commentDto);
         assertEquals(CommentMapper.toCommentDto(expectedComment), actualComment);
+    }
+
+    @Test
+    public void addCommentWithNoItems() {
+        long expectedUserId = user2.getId();
+        long expectedItemId = item.getId();
+        CommentDto commentDto = CommentDto.builder()
+                .text("Comment for item1")
+                .build();
+
+        when(userRepository.validateUser(anyLong())).thenReturn(user);
+        when(bookingRepository.findAllByItemIdAndBookerIdAndStatusIsAndEndBefore(anyLong(), anyLong(), any(BookingStatus.class), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        assertThrows(RequestException.class, () -> itemService.addComment(expectedUserId, expectedItemId, commentDto));
+        verify(commentRepository, never()).save(comment);
     }
 }

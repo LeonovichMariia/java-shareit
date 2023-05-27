@@ -101,6 +101,32 @@ class BookingServiceImplTest {
     }
 
     @Test
+    public void addBookingWithInvalidTime() {
+        when(userRepository.validateUser(anyLong())).thenReturn(user2);
+        when(itemRepository.validateItem(anyLong())).thenReturn(item);
+        bookingCreationDto.setStart(LocalDateTime.now().plusHours(5));
+        bookingCreationDto.setEnd(LocalDateTime.now().minusHours(5));
+
+        assertThrows(BookingException.class, () -> bookingService.addBooking(bookingCreationDto, user2.getId()));
+        verify(userRepository, times(1)).validateUser(user2.getId());
+        verify(itemRepository, times(1)).validateItem(item.getId());
+        verify(bookingRepository, never()).save(booking);
+    }
+
+    @Test
+    public void addBookingWithEqualStartAndEndTime() {
+        when(userRepository.validateUser(anyLong())).thenReturn(user2);
+        when(itemRepository.validateItem(anyLong())).thenReturn(item);
+        bookingCreationDto.setStart(LocalDateTime.now().plusHours(5));
+        bookingCreationDto.setEnd(LocalDateTime.now().plusHours(5));
+
+        assertThrows(BookingException.class, () -> bookingService.addBooking(bookingCreationDto, user2.getId()));
+        verify(userRepository, times(1)).validateUser(user2.getId());
+        verify(itemRepository, times(1)).validateItem(item.getId());
+        verify(bookingRepository, never()).save(booking);
+    }
+
+    @Test
     public void addBookingWhenNotAvailable() {
         item.setAvailable(false);
         when(userRepository.validateUser(anyLong())).thenReturn(user2);
@@ -180,6 +206,22 @@ class BookingServiceImplTest {
     }
 
     @Test
+    public void getBookingByUnknown() {
+        User user3 = User.builder()
+                .id(3L)
+                .name("Name3")
+                .email("user3name@gmail.com")
+                .build();
+        long userId = user3.getId();
+        long bookingId = booking.getId();
+        when(userRepository.validateUser(anyLong())).thenReturn(user3);
+        when(bookingRepository.validateBooking(anyLong())).thenReturn(booking);
+
+        assertThrows(NotFoundException.class, () -> bookingService.getBookingById(bookingId, userId));
+        verify(bookingRepository, times(1)).validateBooking(bookingId);
+    }
+
+    @Test
     public void getBookingById() {
         long userId = user.getId();
         long bookingId = booking.getId();
@@ -214,6 +256,30 @@ class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(expectedList));
         actualList = bookingService.getAllUserBookings(booker.getId(), BookingState.REJECTED, from, size);
         assertEquals(bookingDtoList, actualList);
+
+        booking.setStart(LocalDateTime.now().minusHours(1));
+        booking.setEnd(LocalDateTime.now().plusHours(5));
+        List<BookingDto> bookingDtoList2 = List.of(BookingMapper.toBookingDto(booking));
+        when(bookingRepository.findByBookerIdAndNowBetweenStartAndEnd(anyLong(), any(LocalDateTime.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(expectedList));
+        actualList = bookingService.getAllUserBookings(booker.getId(), BookingState.CURRENT, from, size);
+        assertEquals(bookingDtoList2, actualList);
+
+        booking.setStart(LocalDateTime.now().plusHours(1));
+        booking.setEnd(LocalDateTime.now().plusHours(5));
+        List<BookingDto> bookingDtoList3 = List.of(BookingMapper.toBookingDto(booking));
+        when(bookingRepository.findByBookerIdAndStartIsAfter(anyLong(), any(LocalDateTime.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(expectedList));
+        actualList = bookingService.getAllUserBookings(booker.getId(), BookingState.FUTURE, from, size);
+        assertEquals(bookingDtoList3, actualList);
+
+        booking.setStart(LocalDateTime.now().minusHours(5));
+        booking.setEnd(LocalDateTime.now().plusHours(1));
+        List<BookingDto> bookingDtoList4 = List.of(BookingMapper.toBookingDto(booking));
+        when(bookingRepository.findByBookerIdAndEndIsBefore(anyLong(), any(LocalDateTime.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(expectedList));
+        actualList = bookingService.getAllUserBookings(booker.getId(), BookingState.PAST, from, size);
+        assertEquals(bookingDtoList4, actualList);
     }
 
     @Test
@@ -248,6 +314,30 @@ class BookingServiceImplTest {
                 any(PageRequest.class))).thenReturn(new PageImpl<>(expectedList));
         actualList = bookingService.getOwnerAllItemBookings(owner.getId(), BookingState.REJECTED, from, size);
         assertEquals(bookingDtoList, actualList);
+
+        booking.setStart(LocalDateTime.now().minusHours(1));
+        booking.setEnd(LocalDateTime.now().plusHours(5));
+        List<BookingDto> bookingDtoList2 = List.of(BookingMapper.toBookingDto(booking));
+        when(bookingRepository.findAllCurrentOwnerBookings(anyLong(), any(LocalDateTime.class),
+                any(PageRequest.class))).thenReturn(new PageImpl<>(expectedList));
+        actualList = bookingService.getOwnerAllItemBookings(owner.getId(), BookingState.CURRENT, from, size);
+        assertEquals(bookingDtoList2, actualList);
+
+        booking.setStart(LocalDateTime.now().plusHours(1));
+        booking.setEnd(LocalDateTime.now().plusHours(5));
+        List<BookingDto> bookingDtoList3 = List.of(BookingMapper.toBookingDto(booking));
+        when(bookingRepository.findAllByItemOwnerIdAndStartIsAfter(anyLong(), any(LocalDateTime.class),
+                any(PageRequest.class))).thenReturn(new PageImpl<>(expectedList));
+        actualList = bookingService.getOwnerAllItemBookings(owner.getId(), BookingState.FUTURE, from, size);
+        assertEquals(bookingDtoList3, actualList);
+
+        booking.setStart(LocalDateTime.now().minusHours(5));
+        booking.setEnd(LocalDateTime.now().minusHours(1));
+        List<BookingDto> bookingDtoList4 = List.of(BookingMapper.toBookingDto(booking));
+        when(bookingRepository.findAllByItemOwnerIdAndEndIsBefore(anyLong(), any(LocalDateTime.class),
+                any(PageRequest.class))).thenReturn(new PageImpl<>(expectedList));
+        actualList = bookingService.getOwnerAllItemBookings(owner.getId(), BookingState.PAST, from, size);
+        assertEquals(bookingDtoList4, actualList);
     }
 
     @Test
