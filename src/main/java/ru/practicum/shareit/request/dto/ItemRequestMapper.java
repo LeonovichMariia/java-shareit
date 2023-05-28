@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request.dto;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -9,20 +10,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@UtilityClass
 public class ItemRequestMapper {
 
-    public static ItemRequest toItemRequest(AddItemRequest addItemRequest, User user) {
+    public static ItemRequest toItemRequest(AddItemRequestDto addItemRequestDto, User user) {
         return ItemRequest.builder()
-                .id(addItemRequest.getId())
+                .id(addItemRequestDto.getId())
                 .requestor(user)
-                .description(addItemRequest.getDescription())
-                .created(addItemRequest.getCreated())
+                .description(addItemRequestDto.getDescription())
+                .created(addItemRequestDto.getCreated())
                 .build();
     }
 
-    public static AddItemRequest toAddItemRequest(ItemRequest itemRequest) {
+    public static AddItemRequestDto toAddItemRequest(ItemRequest itemRequest) {
         List<Item> items = itemRequest.getItems();
-        return AddItemRequest.builder()
+        return AddItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .requestor(itemRequest.getRequestor().getId())
                 .description(itemRequest.getDescription())

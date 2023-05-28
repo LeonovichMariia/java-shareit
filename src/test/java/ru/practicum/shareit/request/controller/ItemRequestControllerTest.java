@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.request.dto.AddItemRequest;
+import ru.practicum.shareit.request.dto.AddItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import java.nio.charset.StandardCharsets;
@@ -38,13 +38,13 @@ class ItemRequestControllerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private ItemRequestService itemRequestService;
-    private AddItemRequest itemRequest;
+    private AddItemRequestDto itemRequest;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @BeforeEach
     void setUp() {
         LocalDateTime created = LocalDateTime.now();
-        itemRequest = AddItemRequest.builder()
+        itemRequest = AddItemRequestDto.builder()
                 .created(created)
                 .requestor(1L)
                 .description("Item request description")
@@ -114,7 +114,7 @@ class ItemRequestControllerTest {
 
     @Test
     void getUserItemRequests() throws Exception {
-        List<AddItemRequest> itemRequests = new ArrayList<>();
+        List<AddItemRequestDto> itemRequests = new ArrayList<>();
         itemRequests.add(itemRequest);
         when(itemRequestService.getUserRequests(anyLong())).thenReturn(itemRequests);
 
@@ -129,7 +129,7 @@ class ItemRequestControllerTest {
 
     @Test
     void getOtherUsersRequests() throws Exception {
-        List<AddItemRequest> itemRequests = new ArrayList<>();
+        List<AddItemRequestDto> itemRequests = new ArrayList<>();
         itemRequests.add(itemRequest);
         when(itemRequestService.getOtherUsersRequests(anyLong(), anyInt(), anyInt())).thenReturn(itemRequests);
 

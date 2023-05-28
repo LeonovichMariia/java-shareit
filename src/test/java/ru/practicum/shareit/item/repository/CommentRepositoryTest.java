@@ -25,13 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DataJpaTest
 class CommentRepositoryTest {
     @Autowired
-    CommentRepository commentRepository;
+    private CommentRepository commentRepository;
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
-    ItemRepository itemRepository;
+    private ItemRepository itemRepository;
     @Autowired
-    BookingRepository bookingRepository;
+    private BookingRepository bookingRepository;
     private Item item;
     private Item savedItem;
     private ItemDto itemDto;

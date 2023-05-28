@@ -31,6 +31,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.utils.PageSetup;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -87,7 +88,7 @@ class ItemServiceImplTest {
                 .name("Item name")
                 .description("Item description")
                 .available(true)
-                .owner(user)
+                .ownerId(user.getId())
                 .build();
         itemRequest = ItemRequest.builder()
                 .id(1L)
@@ -121,7 +122,7 @@ class ItemServiceImplTest {
                 .name("Item name")
                 .description("Item description")
                 .available(true)
-                .owner(user)
+                .ownerId(userId)
                 .comments(Collections.emptyList())
                 .build();
         when(userRepository.validateUser(anyLong())).thenReturn(user);
@@ -151,7 +152,7 @@ class ItemServiceImplTest {
                 .description("Item description")
                 .available(true)
                 .requestId(requestId)
-                .owner(user)
+                .ownerId(user.getId())
                 .comments(Collections.emptyList())
                 .build();
         when(userRepository.validateUser(anyLong())).thenReturn(user);
@@ -171,11 +172,11 @@ class ItemServiceImplTest {
     public void renewalItem() {
         itemDto.setDescription("New item description");
         itemDto.setName("New item name");
-        Item itemNew = ItemMapper.toItem(itemDto);
+        Item itemNew = ItemMapper.toItem(itemDto, user);
         ItemDto expectedItem = ItemMapper.toItemDto(itemNew);
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRepository.validateItem(anyLong())).thenReturn(item);
-        when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto));
+        when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto, user));
 
         ItemDto actualItemDto = itemService.renewalItem(item.getId(), itemDto, user.getId());
 
@@ -192,11 +193,11 @@ class ItemServiceImplTest {
         itemDto.setDescription(null);
         itemDto.setName(null);
         itemDto.setAvailable(null);
-        Item itemNew = ItemMapper.toItem(itemDto);
+        Item itemNew = ItemMapper.toItem(itemDto, user);
         ItemDto expectedItem = ItemMapper.toItemDto(itemNew);
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRepository.validateItem(anyLong())).thenReturn(item);
-        when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto));
+        when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto, user));
 
         ItemDto actualItemDto = itemService.renewalItem(item.getId(), itemDto, user.getId());
 
@@ -264,7 +265,7 @@ class ItemServiceImplTest {
         ItemDto expectedItemDto = ItemMapper.toItemDto(item);
         int from = 0;
         int size = 5;
-        Pageable page = PageRequest.of(from > 0 ? from / size : 0, size);
+        Pageable page = new PageSetup(from, size, Sort.unsorted());
         Booking nextBooking = Booking.builder()
                 .id(2L)
                 .start(LocalDateTime.now().plusDays(3))
@@ -296,10 +297,10 @@ class ItemServiceImplTest {
     @Test
     public void getPersonalWithNoItems() {
         item.setOwner(user2);
-        itemDto.setOwner(user2);
+        itemDto.setOwnerId(user2.getId());
         int from = 0;
         int size = 5;
-        Pageable page = PageRequest.of(from > 0 ? from / size : 0, size);
+        Pageable page = new PageSetup(from, size, Sort.unsorted());
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRepository.findAllByOwnerId(anyLong(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
         assertThrows(NotFoundException.class, () -> itemService.getPersonal(user.getId(), from, size));
@@ -313,7 +314,7 @@ class ItemServiceImplTest {
     public void search() {
         int from = 0;
         int size = 5;
-        Pageable page = PageRequest.of(from > 0 ? from / size : 0, size);
+        Pageable page = new PageSetup(from, size, Sort.unsorted());
         String text = "description";
         when(itemRepository.searchItemByText(anyString(), any(PageRequest.class))).thenReturn(new PageImpl<>(List.of(item)));
         List<ItemDto> foundedItems = itemService.search(text, from, size);
@@ -329,7 +330,7 @@ class ItemServiceImplTest {
         String text = "jfghjhk";
         int from = 0;
         int size = 5;
-        Pageable page = PageRequest.of(from > 0 ? from / size : 0, size);
+        Pageable page = new PageSetup(from, size, Sort.unsorted());
         when(itemRepository.searchItemByText(anyString(), any(PageRequest.class))).thenReturn(new PageImpl<>(Collections.emptyList()));
         List<ItemDto> foundedItems = itemService.search(text, from, size);
 

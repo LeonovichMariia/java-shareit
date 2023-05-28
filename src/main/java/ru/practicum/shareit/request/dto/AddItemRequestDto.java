@@ -20,7 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddItemRequest {
+public class AddItemRequestDto {
     private Long id;
     private Long requestor;
     @NotBlank(message = ValidationMessages.EMPTY_DESCRIPTION)

@@ -21,6 +21,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.messages.LogMessages;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.utils.PageSetup;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -95,7 +96,7 @@ public class BookingServiceImpl implements BookingService {
         userRepository.validateUser(bookerId);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookingDtoList;
-        PageRequest pageable = PageRequest.of(from > 0 ? from / size : 0, size, SORT);
+        PageRequest pageable = new PageSetup(from, size, SORT);
         switch (state) {
             case ALL:
                 bookingDtoList = bookingRepository.findAllByBookerId(bookerId, pageable).getContent();
@@ -129,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
         userRepository.validateUser(userId);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookingDtoList;
-        PageRequest pageable = PageRequest.of(from > 0 ? from / size : 0, size, SORT);
+        PageRequest pageable = new PageSetup(from, size, SORT);
         switch (state) {
             case ALL:
                 bookingDtoList = bookingRepository.findAllByItemOwnerId(userId, pageable).getContent();

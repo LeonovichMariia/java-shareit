@@ -7,17 +7,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.dto.AddItemRequest;
+import ru.practicum.shareit.request.dto.AddItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.utils.PageSetup;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemRequestServiceImplTest {
+    private static final Sort SORT_BY_CREATED_DESC = Sort.by("created").descending();
     @Mock
     private ItemRequestRepository itemRequestRepository;
     @Mock
@@ -40,7 +42,7 @@ class ItemRequestServiceImplTest {
     ItemRequestServiceImpl itemRequestService;
     private User user;
     private User user2;
-    private AddItemRequest addItemRequest;
+    private AddItemRequestDto addItemRequestDto;
     private ItemRequest itemRequest;
     private Item item;
 
@@ -70,7 +72,7 @@ class ItemRequestServiceImplTest {
                 .requestor(user)
                 .created(LocalDateTime.now())
                 .build();
-        addItemRequest = AddItemRequest.builder()
+        addItemRequestDto = AddItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .requestor(itemRequest.getRequestor().getId())
                 .description("Description")
@@ -83,11 +85,11 @@ class ItemRequestServiceImplTest {
     public void addItemRequestAndReturnSavedRequest() {
         when(itemRequestRepository.save(any())).thenReturn(itemRequest);
 
-        AddItemRequest actualNewRequest = itemRequestService.addRequest(addItemRequest, user.getId());
+        AddItemRequestDto actualNewRequest = itemRequestService.addRequest(addItemRequestDto, user.getId());
         assertNotNull(actualNewRequest);
-        assertEquals(addItemRequest, actualNewRequest);
-        assertEquals(addItemRequest.getId(), actualNewRequest.getId());
-        assertEquals(addItemRequest.getDescription(), actualNewRequest.getDescription());
+        assertEquals(addItemRequestDto, actualNewRequest);
+        assertEquals(addItemRequestDto.getId(), actualNewRequest.getId());
+        assertEquals(addItemRequestDto.getDescription(), actualNewRequest.getDescription());
         verify(itemRequestRepository, times(1)).save(any());
     }
 
@@ -96,13 +98,13 @@ class ItemRequestServiceImplTest {
         Long userId = user.getId();
         List<ItemRequest> requestList = new ArrayList<>();
         requestList.add(itemRequest);
-        List<AddItemRequest> addItemList = List.of(
+        List<AddItemRequestDto> addItemList = List.of(
                 ItemRequestMapper.toAddItemRequest(requestList.get(0)));
 
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRequestRepository.findAllByRequestorId(anyLong()))
                 .thenReturn(requestList);
-        List<AddItemRequest> actualRequestList = itemRequestService.getUserRequests(userId);
+        List<AddItemRequestDto> actualRequestList = itemRequestService.getUserRequests(userId);
         assertEquals(addItemList, actualRequestList);
         verify(itemRequestRepository, times(1)).findAllByRequestorId(userId);
     }
@@ -111,23 +113,23 @@ class ItemRequestServiceImplTest {
     public void getOtherUsersRequests() {
         int from = 0;
         int size = 5;
-        Pageable page = PageRequest.of(from > 0 ? from / size : 0, size);
+        Pageable page = new PageSetup(from, size, SORT_BY_CREATED_DESC);
         Long userId = user.getId();
-        List<AddItemRequest> addItemList = Collections.emptyList();
+        List<AddItemRequestDto> addItemList = Collections.emptyList();
 
         when(userRepository.validateUser(anyLong())).thenReturn(user);
         when(itemRequestRepository.findAllByRequestorIdNot(userId, page)).thenReturn(Page.empty());
-        List<AddItemRequest> actualRequestList = itemRequestService.getOtherUsersRequests(userId, from, size);
+        List<AddItemRequestDto> actualRequestList = itemRequestService.getOtherUsersRequests(userId, from, size);
         assertEquals(addItemList, actualRequestList);
         verify(itemRequestRepository, times(1)).findAllByRequestorIdNot(userId, page);
     }
 
     @Test
     public void getItemRequestById() {
-        AddItemRequest expectedRequest = ItemRequestMapper.toAddItemRequest(itemRequest);
+        AddItemRequestDto expectedRequest = ItemRequestMapper.toAddItemRequest(itemRequest);
 
         when(itemRequestRepository.validateItemRequest(anyLong())).thenReturn(itemRequest);
-        AddItemRequest actualRequest = itemRequestService.getItemRequestById(user.getId(), itemRequest.getId());
+        AddItemRequestDto actualRequest = itemRequestService.getItemRequestById(user.getId(), itemRequest.getId());
         assertNotNull(actualRequest);
         assertEquals(expectedRequest.getId(), actualRequest.getId());
         assertEquals(expectedRequest.getDescription(), actualRequest.getDescription());

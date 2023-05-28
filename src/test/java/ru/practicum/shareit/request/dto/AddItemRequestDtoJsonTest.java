@@ -13,25 +13,25 @@ import java.time.format.DateTimeFormatter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-class AddItemRequestJsonTest {
+class AddItemRequestDtoJsonTest {
     @Autowired
-    private JacksonTester<AddItemRequest> json;
+    private JacksonTester<AddItemRequestDto> json;
 
     @Test
     void testItemRequestDto() throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
         LocalDateTime now = LocalDateTime.now();
-        AddItemRequest addItemRequest = AddItemRequest.builder()
+        AddItemRequestDto addItemRequestDto = AddItemRequestDto.builder()
                 .id(1L)
                 .requestor(1L)
                 .description("item description")
                 .created(now)
                 .build();
-        JsonContent<AddItemRequest> result = json.write(addItemRequest);
+        JsonContent<AddItemRequestDto> result = json.write(addItemRequestDto);
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathNumberValue("$.requestor").isEqualTo(1);
-        assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo(addItemRequest.getDescription());
+        assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo(addItemRequestDto.getDescription());
         assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo(now.format(formatter));
         assertThat(result).hasEmptyJsonPathValue("$.items");
     }

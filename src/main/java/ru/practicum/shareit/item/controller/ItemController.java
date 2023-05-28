@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.messages.LogMessages;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;
 
@@ -51,7 +50,7 @@ public class ItemController {
     @GetMapping
     public List<ItemDto> getPersonalItems(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
-                                          @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(20) Integer size) {
+                                          @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         log.info(LogMessages.GET_ALL_REQUEST.toString());
         return itemService.getPersonal(userId, from, size);
     }
@@ -59,7 +58,7 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> searchItem(@RequestParam String text,
                                     @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
-                                    @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(20) Integer size) {
+                                    @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         log.info(LogMessages.SEARCH_REQUEST.toString());
         return itemService.search(text, from, size);
     }

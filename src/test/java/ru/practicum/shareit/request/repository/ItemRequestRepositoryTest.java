@@ -5,12 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.utils.PageSetup;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,7 +62,7 @@ class ItemRequestRepositoryTest {
         savedItemRequest2 = itemRequestRepository.save(itemRequest2);
         int from = 0;
         int size = 10;
-        page = PageRequest.of(from > 0 ? from / size : 0, size);
+        page = new PageSetup(from, size, Sort.unsorted());
     }
 
     @AfterEach

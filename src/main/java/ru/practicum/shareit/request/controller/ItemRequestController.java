@@ -5,11 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.messages.LogMessages;
-import ru.practicum.shareit.request.dto.AddItemRequest;
+import ru.practicum.shareit.request.dto.AddItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;
 
@@ -25,27 +24,27 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
-    public AddItemRequest addRequest(@Valid @RequestBody AddItemRequest addItemRequest,
-                                     @RequestHeader("X-Sharer-User-Id") Long requestorId) {
+    public AddItemRequestDto addRequest(@Valid @RequestBody AddItemRequestDto addItemRequestDto,
+                                        @RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info(LogMessages.ADD_ITEMREQUEST_REQUEST.toString());
-        return itemRequestService.addRequest(addItemRequest, requestorId);
+        return itemRequestService.addRequest(addItemRequestDto, requestorId);
     }
 
     @GetMapping
-    public List<AddItemRequest> getUserRequests(@RequestHeader("X-Sharer-User-Id") Long requestorId) {
+    public List<AddItemRequestDto> getUserRequests(@RequestHeader("X-Sharer-User-Id") Long requestorId) {
         return itemRequestService.getUserRequests(requestorId);
     }
 
     @GetMapping("all")
-    public List<AddItemRequest> getOtherUsersRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                      @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
-                                                      @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(20) Integer size) {
+    public List<AddItemRequestDto> getOtherUsersRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                         @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
+                                                         @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         return itemRequestService.getOtherUsersRequests(userId, from, size);
     }
 
     @GetMapping("{requestId}")
-    public AddItemRequest getItemRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                             @PathVariable Long requestId) {
+    public AddItemRequestDto getItemRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                @PathVariable Long requestId) {
         return itemRequestService.getItemRequestById(userId, requestId);
     }
 }

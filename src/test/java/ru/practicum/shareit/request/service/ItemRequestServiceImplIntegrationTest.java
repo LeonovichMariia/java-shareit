@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.request.dto.AddItemRequest;
+import ru.practicum.shareit.request.dto.AddItemRequestDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -32,7 +32,7 @@ class ItemRequestServiceImplIntegrationTest {
     private UserDto owner;
     private UserDto requestor;
     private UserDto savedRequestor;
-    private AddItemRequest savedRequest;
+    private AddItemRequestDto savedRequest;
 
     @BeforeEach
     void setUp() {
@@ -52,7 +52,7 @@ class ItemRequestServiceImplIntegrationTest {
                 .name("Item")
                 .description("Item description")
                 .available(true)
-                .owner(itemOwner)
+                .ownerId(itemOwner.getId())
                 .build();
     }
 
@@ -61,14 +61,14 @@ class ItemRequestServiceImplIntegrationTest {
         UserDto savedOwner = userService.addUser(owner);
         savedRequestor = userService.addUser(requestor);
         savedItem = itemService.addItem(savedOwner.getId(), itemDto);
-        AddItemRequest addItemRequest = AddItemRequest.builder()
+        AddItemRequestDto addItemRequestDto = AddItemRequestDto.builder()
                 .description("Description")
                 .requestor(savedRequestor.getId())
                 .items(List.of(savedItem))
                 .created(LocalDateTime.now())
                 .build();
-        savedRequest = itemRequestService.addRequest(addItemRequest, savedRequestor.getId());
-        List<AddItemRequest> requestsList = itemRequestService.getUserRequests(savedRequestor.getId());
+        savedRequest = itemRequestService.addRequest(addItemRequestDto, savedRequestor.getId());
+        List<AddItemRequestDto> requestsList = itemRequestService.getUserRequests(savedRequestor.getId());
         assertNotNull(requestsList);
         assertEquals(1, requestsList.size());
         assertEquals(savedRequest.getId(), requestsList.get(0).getId());

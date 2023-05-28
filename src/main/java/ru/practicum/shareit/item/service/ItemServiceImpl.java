@@ -27,6 +27,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.utils.PageSetup;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -50,8 +51,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
-        Item item = ItemMapper.toItem(itemDto);
         User user = userRepository.validateUser(userId);
+        Item item = ItemMapper.toItem(itemDto, user);
         item.setOwner(user);
         Long requestId = itemDto.getRequestId();
         if (requestId != null) {
@@ -102,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getPersonal(Long userId, Integer from, Integer size) {
         userRepository.validateUser(userId);
-        PageRequest pageRequest = PageRequest.of(from > 0 ? from / size : 0, size);
+        PageRequest pageRequest = new PageSetup(from, size, Sort.unsorted());
         List<Item> items = itemRepository.findAllByOwnerId(userId, pageRequest).getContent();
         if (items.isEmpty()) {
             log.warn(LogMessages.NOT_FOUND.toString());
@@ -135,7 +136,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         String lowerText = text.toLowerCase();
-        PageRequest pageRequest = PageRequest.of(from > 0 ? from / size : 0, size);
+        PageRequest pageRequest = new PageSetup(from, size, Sort.unsorted());
         Collection<Item> items = itemRepository.searchItemByText(lowerText,
                 pageRequest).getContent();
         return items.stream()

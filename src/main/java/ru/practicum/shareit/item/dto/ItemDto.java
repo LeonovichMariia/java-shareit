@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.messages.ValidationMessages;
-import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -23,7 +22,7 @@ public class ItemDto {
     private String description;
     @NotNull(message = ValidationMessages.AVAILABLE_NULL)
     private Boolean available;
-    private User owner;
+    private Long ownerId;
     private Long requestId;
     private List<CommentDto> comments;
     private BookingShortDto lastBooking;
