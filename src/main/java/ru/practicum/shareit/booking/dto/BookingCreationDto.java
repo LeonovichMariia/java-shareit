@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import static ru.practicum.shareit.booking.BookingStatus.WAITING;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingCreationDto {
@@ -30,5 +30,5 @@ public class BookingCreationDto {
     private LocalDateTime end;
     @NotNull
     private Long itemId;
-    private final BookingStatus status = WAITING;
+    private BookingStatus status = WAITING;
 }
