@@ -39,7 +39,7 @@ class ItemRequestControllerTest {
     @MockBean
     private ItemRequestService itemRequestService;
     private AddItemRequestDto itemRequest;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @BeforeEach
     void setUp() {

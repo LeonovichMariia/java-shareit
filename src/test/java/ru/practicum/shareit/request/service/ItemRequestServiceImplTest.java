@@ -39,7 +39,7 @@ class ItemRequestServiceImplTest {
     @Mock
     private UserService userService;
     @InjectMocks
-    ItemRequestServiceImpl itemRequestService;
+    private ItemRequestServiceImpl itemRequestService;
     private User user;
     private User user2;
     private AddItemRequestDto addItemRequestDto;

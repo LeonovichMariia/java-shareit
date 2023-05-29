@@ -16,10 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AddItemRequestDtoJsonTest {
     @Autowired
     private JacksonTester<AddItemRequestDto> json;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @Test
     void testItemRequestDto() throws IOException {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
         LocalDateTime now = LocalDateTime.now();
         AddItemRequestDto addItemRequestDto = AddItemRequestDto.builder()
                 .id(1L)
