@@ -14,7 +14,6 @@ public enum LogMessages {
     INTERNAL_SERVER_ERROR_STATUS("Ошибка 500! {}"),
     ALREADY_EXIST_ERROR_STATUS("Ошибка 409!"),
     ILLEGAL_ACCESS_ERROR_STATUS("Ошибка 403!"),
-    ALREADY_EXIST("Такой объект {} уже есть"),
     BLANK_TEXT("Задан пустой поисковый запрос"),
     NOT_FOUND("Объект не найден {} "),
     ILLEGAL_ACCESS("Данный пользователь не оболадает правами доступа к вещи"),

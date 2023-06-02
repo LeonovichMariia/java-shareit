@@ -44,8 +44,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public void removeUserById(@PathVariable long userId) {
+    public ResponseEntity<Object> removeUserById(@PathVariable long userId) {
         log.info(LogMessages.REMOVE_REQUEST.toString(), userId);
-        userClient.removeUserById(userId);
+        return userClient.removeUserById(userId);
     }
 }
