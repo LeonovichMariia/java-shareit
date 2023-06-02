@@ -41,7 +41,7 @@ public class ItemClient extends BaseClient {
         return get("/" + itemId, userId);
     }
 
-    public ResponseEntity<Object> getPersonalItems(long userId, Integer from, Integer size) {
+    public ResponseEntity<Object> getPersonal(long userId, Integer from, Integer size) {
         final Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size

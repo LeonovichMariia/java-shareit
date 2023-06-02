@@ -29,7 +29,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ResponseEntity<Object> renewalBooking(@PathVariable Long itemId,
+    public ResponseEntity<Object> renewalBooking(@PathVariable long itemId,
                                                  @RequestBody ItemDto itemDto,
                                                  @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info(LogMessages.RENEWAL_ITEM.toString(), itemId, userId);
@@ -37,18 +37,18 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<Object> getItemById(@RequestHeader("X-Sharer-User-Id") Long ownerId,
-                                              @PathVariable Long itemId) {
+    public ResponseEntity<Object> getItemById(@RequestHeader("X-Sharer-User-Id") long ownerId,
+                                              @PathVariable long itemId) {
         log.info(LogMessages.GET_ITEM_BY_ID.toString(), itemId, ownerId);
         return itemClient.getItemById(ownerId, itemId);
     }
 
     @GetMapping
-    public ResponseEntity<Object> getPersonalItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                    @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
-                                                    @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
+    public ResponseEntity<Object> getPersonal(@RequestHeader("X-Sharer-User-Id") long userId,
+                                              @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
+                                              @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         log.info(LogMessages.GET_ALL_REQUEST.toString(), userId, from, size);
-        return itemClient.getPersonalItems(userId, from, size);
+        return itemClient.getPersonal(userId, from, size);
     }
 
     @GetMapping("/search")
@@ -62,7 +62,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> addComment(@RequestHeader(value = "X-Sharer-User-Id") long userId,
-                                 @PathVariable Long itemId,
+                                 @PathVariable long itemId,
                                  @Valid @RequestBody CommentDto commentDto) {
         log.info(LogMessages.COMMENT_REQUEST.toString(), itemId, userId);
         return itemClient.addComment(userId, itemId, commentDto);

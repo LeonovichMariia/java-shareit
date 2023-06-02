@@ -103,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getPersonal(Long userId, Integer from, Integer size) {
         userRepository.validateUser(userId);
-        PageRequest pageRequest = new PageSetup(from, size, Sort.unsorted());
+        PageRequest pageRequest = new PageSetup(from, size, Sort.by("id").ascending());
         List<Item> items = itemRepository.findAllByOwnerId(userId, pageRequest).getContent();
         if (items.isEmpty()) {
             log.warn(LogMessages.NOT_FOUND.toString());
