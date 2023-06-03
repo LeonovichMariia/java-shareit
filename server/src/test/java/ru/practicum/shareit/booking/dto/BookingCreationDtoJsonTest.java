@@ -21,7 +21,7 @@ class BookingCreationDtoJsonTest {
 
     @Test
     void testBookingCreationDto() throws IOException {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.of(2023, 5, 8, 12, 30,0);;
         BookingCreationDto bookingCreationDto = BookingCreationDto.builder()
                 .id(1L)
                 .status(BookingStatus.WAITING)
@@ -33,8 +33,8 @@ class BookingCreationDtoJsonTest {
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.status").isEqualTo("WAITING");
-        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo((now.plusDays(2)).format(formatter));
-        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo((now.plusDays(3)).format(formatter));
+        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo(now.plusDays(2).format(formatter));
+        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo(now.plusDays(3).format(formatter));
         assertThat(result).extractingJsonPathNumberValue("$.itemId").isEqualTo(1);
     }
 }

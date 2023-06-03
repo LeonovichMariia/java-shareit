@@ -12,6 +12,7 @@ import ru.practicum.shareit.messages.LogMessages;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.PositiveOrZero;
 
 @Slf4j
 @Validated
@@ -45,7 +46,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> getPersonal(@RequestHeader("X-Sharer-User-Id") long userId,
-                                              @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
+                                              @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                               @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         log.info(LogMessages.GET_ALL_REQUEST.toString(), userId, from, size);
         return itemClient.getPersonal(userId, from, size);
@@ -54,7 +55,7 @@ public class ItemController {
     @GetMapping("/search")
     public ResponseEntity<Object> searchItem(@RequestHeader(value = "X-Sharer-User-Id") long userId,
                                              @RequestParam String text,
-                                             @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
+                                             @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                              @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         log.info(LogMessages.SEARCH_REQUEST.toString(), text, userId, from, size);
         return itemClient.searchItem(userId, text, from, size);

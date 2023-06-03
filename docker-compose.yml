@@ -23,7 +23,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/share_it
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
-#      - TZ=Europe/Moscow
 
   db:
     image: postgres:13.7-alpine

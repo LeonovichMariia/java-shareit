@@ -2,20 +2,17 @@ package ru.practicum.shareit.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.messages.LogMessages;
 import ru.practicum.shareit.request.dto.AddItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
-import javax.validation.constraints.Min;
 import java.util.List;
 
 /**
  * TODO Sprint add-item-requests.
  */
 @Slf4j
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/requests")
@@ -36,8 +33,8 @@ public class ItemRequestController {
 
     @GetMapping("all")
     public List<AddItemRequestDto> getOtherUsersRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                         @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
-                                                         @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
+                                                         @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                                         @RequestParam(name = "size", defaultValue = "10") Integer size) {
         return itemRequestService.getOtherUsersRequests(userId, from, size);
     }
 

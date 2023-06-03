@@ -11,6 +11,7 @@ import ru.practicum.shareit.request.dto.AddItemRequestDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.PositiveOrZero;
 
 @Slf4j
 @Validated
@@ -35,7 +36,7 @@ public class ItemRequestController {
 
     @GetMapping("all")
     public ResponseEntity<Object> getOtherUsersRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                        @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
+                                                        @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                         @RequestParam(name = "size", defaultValue = "10") @Min(1) Integer size) {
         log.info(LogMessages.GET_OTHER_REQUESTS.toString(), userId, from, size);
         return itemRequestClient.getOtherUsersRequests(userId, from, size);

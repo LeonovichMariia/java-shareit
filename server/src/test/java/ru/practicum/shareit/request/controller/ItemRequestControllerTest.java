@@ -39,11 +39,11 @@ class ItemRequestControllerTest {
     @MockBean
     private ItemRequestService itemRequestService;
     private AddItemRequestDto itemRequest;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @BeforeEach
     void setUp() {
-        LocalDateTime created = LocalDateTime.now();
+        LocalDateTime created = LocalDateTime.of(2023, 5, 8, 12, 30,0);
         itemRequest = AddItemRequestDto.builder()
                 .created(created)
                 .requestor(1L)
@@ -63,8 +63,7 @@ class ItemRequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemRequest.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequest.getDescription())))
-                .andExpect(jsonPath("$.created",
-                        is((itemRequest.getCreated().format(formatter)).replaceAll("0+$", ""))))
+                .andExpect(jsonPath("$.created", is(itemRequest.getCreated().format(formatter))))
                 .andExpect(jsonPath("$.requestor", is(itemRequest.getRequestor()), Long.class));
     }
 
@@ -89,8 +88,7 @@ class ItemRequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemRequest.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequest.getDescription())))
-                .andExpect(jsonPath("$.created",
-                        is((itemRequest.getCreated().format(formatter)).replaceAll("0+$", ""))))
+                .andExpect(jsonPath("$.created", is(itemRequest.getCreated().format(formatter))))
                 .andExpect(jsonPath("$.requestor", is(itemRequest.getRequestor()), Long.class));
     }
 
