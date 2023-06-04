@@ -14,11 +14,13 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemDto {
+    private Long id;
     @NotBlank(message = ValidationMessages.EMPTY_NAME)
     private String name;
     @NotBlank(message = ValidationMessages.EMPTY_DESCRIPTION)
     private String description;
     @NotNull(message = ValidationMessages.AVAILABLE_NULL)
     private Boolean available;
+    private Long ownerId;
     private Long requestId;
 }
